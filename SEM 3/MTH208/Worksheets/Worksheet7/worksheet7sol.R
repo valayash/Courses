@@ -57,8 +57,10 @@ images = html  %>%  html_elements("a img")  %>%  html_attr("src")
 
 library(imager)
 propo = numeric(250)
+l=1
 for(k in images)
 {
+  
   im = load.image(k)
   mat.im = as.array(im[,,1,])
   dimen = dim(mat.im)
@@ -68,11 +70,14 @@ for(k in images)
     for (j in 1:dimen[2]) 
     {
       if( norm(mat.im[i,j,] - c(0,0,0) ,type = "2") == 0.2 )
+      {
         count = count + 1
+      }
     }
   }
   
-  propo[k] = (count) / ( dimen[1] * dimen[2] )
+  propo[l] = (count) / ( dimen[1] * dimen[2] )
+  l = l+1
    
 }
 
@@ -90,7 +95,7 @@ for( i in 1:dimen[1])
   }
 }
 
-propo[k] = (count) / ( dimen[1] * dimen[2] )
+propo[1] = (count) / ( dimen[1] * dimen[2] )
 
 
 
