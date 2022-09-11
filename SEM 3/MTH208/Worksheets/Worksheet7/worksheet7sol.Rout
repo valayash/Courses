@@ -1,0 +1,1445 @@
+
+R version 4.2.1 (2022-06-23) -- "Funny-Looking Kid"
+Copyright (C) 2022 The R Foundation for Statistical Computing
+Platform: aarch64-apple-darwin20 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> library(tidyverse)
+── Attaching packages ─────────────────────────────────────── tidyverse 1.3.2 ──
+✔ ggplot2 3.3.6     ✔ purrr   0.3.4
+✔ tibble  3.1.8     ✔ dplyr   1.0.9
+✔ tidyr   1.2.0     ✔ stringr 1.4.1
+✔ readr   2.1.2     ✔ forcats 0.5.2
+── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ dplyr::filter() masks stats::filter()
+✖ dplyr::lag()    masks stats::lag()
+> library(rvest)
+
+Attaching package: ‘rvest’
+
+The following object is masked from ‘package:readr’:
+
+    guess_encoding
+
+> 
+> html <- read_html("https://www.imdb.com/chart/top/")
+> 
+> #EScrapping Names of the movies
+> movies.name <- html  %>%  html_elements(".titleColumn a")  %>%  html_text()
+> 
+> #EScrapping Year of the movies
+> movies.year <- html  %>%  html_elements(".titleColumn .secondaryInfo")  %>%  html_text() %>%  substr(2 , 5)
+> 
+> #Scrapping rating of the movies
+> movies.rating <- html  %>%  html_elements(".ratingColumn strong")  %>%  html_text()
+> 
+> #Scraping Number of votes
+> movies.vote <- html  %>%  html_elements(".posterColumn span")  %>%  html_attr("data-value")
+> vote = numeric(250)
+> i = 4
+> j = 1
+> while(i < 1250)
++ {
++   
++   vote[j] = movies.vote[i]
++   j = j + 1
++   i = i + 5
++   
++ }
+> movies.vote = vote
+> 
+> # Extracting code for a specific movie
+> html = read_html("https://www.imdb.com/chart/top/")
+> movies.code = html  %>%  html_elements(".wlb_ribbon")  %>%  html_attr("data-tconst")
+> 
+> movies.vote.rat = data.frame()
+> movies.vote.gen = data.frame()
+> for( i in movies.code)
++ {
++    website = paste("https://www.imdb.com/title/" , i ,"/ratings/" ,sep ="")
++    html = read_html(website)
++    distr = html_table(html)
++    movies.vote.rat = rbind(movies.vote.rat , t(distr[[1]][ ,3]))
++    movies.vote.gen = rbind(movies.vote.gen , t(distr[[2]][2:3, 2]))
++    
++ }
+> 
+> col.name = c("Movie" , "Year" , "Rating" , "No of Votes" , "10","9","8","7","6","5","4","3","2","1","Male Rating........................ No of Male Votes" , "Female Rating...................No of Female Votes")
+> movies = data.frame(movies.name,movies.year,movies.rating,movies.vote,movies.vote.rat,movies.vote.gen)
+> colnames(movies) = col.name
+> rownames(movies) <- 1:nrow(movies)
+> 
+> #Problem2
+> 
+> html <- read_html("https://www.imdb.com/chart/top/")
+> images = html  %>%  html_elements("a img")  %>%  html_attr("src")
+> 
+> #Problem3
+> 
+> library(imager)
+Loading required package: magrittr
+
+Attaching package: ‘magrittr’
+
+The following object is masked from ‘package:purrr’:
+
+    set_names
+
+The following object is masked from ‘package:tidyr’:
+
+    extract
+
+
+Attaching package: ‘imager’
+
+The following object is masked from ‘package:magrittr’:
+
+    add
+
+The following object is masked from ‘package:stringr’:
+
+    boundary
+
+The following object is masked from ‘package:tidyr’:
+
+    fill
+
+The following objects are masked from ‘package:stats’:
+
+    convolve, spectrum
+
+The following object is masked from ‘package:graphics’:
+
+    frame
+
+The following object is masked from ‘package:base’:
+
+    save.image
+
+> propo = numeric(250)
+> l=1
+> for(k in images)
++ {
++   
++   im = load.image(k)
++   mat.im = as.array(im[,,1,])
++   dimen = dim(mat.im)
++   count = 0
++   for( i in 1:dimen[1])
++   {
++     for (j in 1:dimen[2]) 
++     {
++       if( norm(mat.im[i,j,] - c(0,0,0) ,type = "2") == 0.2 )
++       {
++         count = count + 1
++       }
++     }
++   }
++   
++   propo[l] = (count) / ( dimen[1] * dimen[2] )
++   l = l+1
++    
++ }
+trying URL 'https://m.media-amazon.com/images/M/MV5BMDFkYTc0MGEtZmNhMC00ZDIzLWFmNTEtODM1ZmRlYWMwMWFmXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1062 bytes
+==================================================
+downloaded 1062 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BM2MyNjYxNmUtYTAwNi00MTYxLWJmNWYtYzZlODY3ZTk3OTFlXkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_UY67_CR1,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1401 bytes
+==================================================
+downloaded 1401 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMTMxNTMwODM0NF5BMl5BanBnXkFtZTcwODAyMTk2Mw@@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1464 bytes
+==================================================
+downloaded 1464 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMWMwMGQzZTItY2JlNC00OWZiLWIyMDctNDk2ZDQ2YjRjMWQ0XkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_UY67_CR1,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 946 bytes
+==================================================
+downloaded 946 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMWU4N2FjNzYtNTVkNC00NzQ0LTg0MjAtYTJlMjFhNGUxZDFmXkEyXkFqcGdeQXVyNjc1NTYyMjg@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1744 bytes
+==================================================
+downloaded 1744 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BNDE4OTMxMTctNmRhYy00NWE2LTg3YzItYTk3M2UwOTU5Njg4XkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1248 bytes
+==================================================
+downloaded 1248 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BNzA5ZDNlZWMtM2NhNS00NDJjLTk4NDItYTRmY2EwMWZlMTY3XkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1511 bytes
+==================================================
+downloaded 1511 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BNGNhMDIzZTUtNTBlZi00MTRlLWFjM2ItYzViMjE3YzI5MjljXkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1925 bytes
+==================================================
+downloaded 1925 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BN2EyZjM3NzUtNWUzMi00MTgxLWI0NTctMzY4M2VlOTdjZWRiXkEyXkFqcGdeQXVyNDUzOTQ5MjY@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1372 bytes
+==================================================
+downloaded 1372 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BNjJlYmNkZGItM2NhYy00MjlmLTk5NmQtNjg1NmM2ODU4OTMwXkEyXkFqcGdeQXVyMjUzOTY1NTc@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1515 bytes
+==================================================
+downloaded 1515 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BNWIwODRlZTUtY2U3ZS00Yzg1LWJhNzYtMmZiYmEyNmU1NjMzXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1129 bytes
+==================================================
+downloaded 1129 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BNDIzNDU0YzEtYzE5Ni00ZjlkLTk5ZjgtNjM3NWE4YzA3Nzk3XkEyXkFqcGdeQXVyMjUzOTY1NTc@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1416 bytes
+==================================================
+downloaded 1416 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1546 bytes
+==================================================
+downloaded 1546 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BZGMxZTdjZmYtMmE2Ni00ZTdkLWI5NTgtNjlmMjBiNzU2MmI5XkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1390 bytes
+==================================================
+downloaded 1390 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BYmU1NDRjNDgtMzhiMi00NjZmLTg5NGItZDNiZjU5NTU4OTE0XkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1408 bytes
+==================================================
+downloaded 1408 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BNzQzOTk3OTAtNDQ0Zi00ZTVkLWI0MTEtMDllZjNkYzNjNTc4L2ltYWdlXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1484 bytes
+==================================================
+downloaded 1484 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BY2NkZjEzMDgtN2RjYy00YzM1LWI4ZmQtMjIwYjFjNmI3ZGEwXkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1411 bytes
+==================================================
+downloaded 1411 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BZjA0OWVhOTAtYWQxNi00YzNhLWI4ZjYtNjFjZTEyYjJlNDVlL2ltYWdlL2ltYWdlXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1224 bytes
+==================================================
+downloaded 1224 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BOTUwODM5MTctZjczMi00OTk4LTg3NWUtNmVhMTAzNTNjYjcyXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1633 bytes
+==================================================
+downloaded 1633 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BNWQ3OTM4ZGItMWEwZi00MjI5LWI3YzgtNTYwNWRkNmIzMGI5XkEyXkFqcGdeQXVyNDY2MTk1ODk@._V1_UY67_CR1,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1926 bytes
+==================================================
+downloaded 1926 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BZjc4NDZhZWMtNGEzYS00ZWU2LThlM2ItNTA0YzQ0OTExMTE2XkEyXkFqcGdeQXVyNjUwMzI2NzU@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1867 bytes
+==================================================
+downloaded 1867 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BNjNhZTk0ZmEtNjJhMi00YzFlLWE1MmEtYzM1M2ZmMGMwMTU4XkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1254 bytes
+==================================================
+downloaded 1254 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BOTMwYjc5ZmItYTFjZC00ZGQ3LTlkNTMtMjZiNTZlMWQzNzI5XkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1612 bytes
+==================================================
+downloaded 1612 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BZjhkMDM4MWItZTVjOC00ZDRhLThmYTAtM2I5NzBmNmNlMzI1XkEyXkFqcGdeQXVyNDYyMDk5MTU@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1194 bytes
+==================================================
+downloaded 1194 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BYmJmM2Q4NmMtYThmNC00ZjRlLWEyZmItZTIwOTBlZDQ3NTQ1XkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1559 bytes
+==================================================
+downloaded 1559 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMTUxMzQyNjA5MF5BMl5BanBnXkFtZTYwOTU2NTY3._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1276 bytes
+==================================================
+downloaded 1276 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BZjdkOTU3MDktN2IxOS00OGEyLWFmMjktY2FiMmZkNWIyODZiXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1208 bytes
+==================================================
+downloaded 1208 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BNzg4MjQxNTQtZmI5My00YjMwLWJlMjUtMmJlY2U2ZWFlNzY1XkEyXkFqcGdeQXVyODk4OTc3MTY@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1730 bytes
+==================================================
+downloaded 1730 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMGU2NzRmZjUtOGUxYS00ZjdjLWEwZWItY2NlM2JhNjkxNTFmXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1437 bytes
+==================================================
+downloaded 1437 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BZmU0M2Y1OGUtZjIxNi00ZjBkLTg1MjgtOWIyNThiZWIwYjRiXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1709 bytes
+==================================================
+downloaded 1709 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMjlmZmI5MDctNDE2YS00YWE0LWE5ZWItZDBhYWQ0NTcxNWRhXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1363 bytes
+==================================================
+downloaded 1363 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BNTQwNDM1YzItNDAxZC00NWY2LTk0M2UtNDIwNWI5OGUyNWUxXkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1798 bytes
+==================================================
+downloaded 1798 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BOWRiZDIxZjktMTA1NC00MDQ2LWEzMjUtMTliZmY3NjQ3ODJiXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_UY67_CR2,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1120 bytes
+==================================================
+downloaded 1120 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BODllNWE0MmEtYjUwZi00ZjY3LThmNmQtZjZlMjI2YTZjYmQ0XkEyXkFqcGdeQXVyNTc1NTQxODI@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1452 bytes
+==================================================
+downloaded 1452 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BYWZjMjk3ZTItODQ2ZC00NTY5LWE0ZDYtZTI3MjcwN2Q5NTVkXkEyXkFqcGdeQXVyODk4OTc3MTY@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1568 bytes
+==================================================
+downloaded 1568 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BYTYxNGMyZTYtMjE3MS00MzNjLWFjNmYtMDk3N2FmM2JiM2M1XkEyXkFqcGdeQXVyNjY5NDU4NzI@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1356 bytes
+==================================================
+downloaded 1356 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMDliMmNhNDEtODUyOS00MjNlLTgxODEtN2U3NzIxMGVkZTA1L2ltYWdlXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1193 bytes
+==================================================
+downloaded 1193 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BZTJhN2FkYWEtMGI0My00YWM4LWI2MjAtM2UwNjY4MTI2ZTQyXkEyXkFqcGdeQXVyNjc3MjQzNTI@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1328 bytes
+==================================================
+downloaded 1328 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMTI1MTY2OTIxNV5BMl5BanBnXkFtZTYwNjQ4NjY3._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1390 bytes
+==================================================
+downloaded 1390 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BYTViNjMyNmUtNDFkNC00ZDRlLThmMDUtZDU2YWE4NGI2ZjVmXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1465 bytes
+==================================================
+downloaded 1465 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMjA4NDI0MTIxNF5BMl5BanBnXkFtZTYwNTM0MzY2._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1016 bytes
+==================================================
+downloaded 1016 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BY2IzZGY2YmEtYzljNS00NTM5LTgwMzUtMzM1NjQ4NGI0OTk0XkEyXkFqcGdeQXVyNDYyMDk5MTU@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1648 bytes
+==================================================
+downloaded 1648 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BOTA5NDZlZGUtMjAxOS00YTRkLTkwYmMtYWQ0NWEwZDZiNjEzXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1027 bytes
+==================================================
+downloaded 1027 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMTYxNDA3MDQwNl5BMl5BanBnXkFtZTcwNTU4Mzc1Nw@@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1405 bytes
+==================================================
+downloaded 1405 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BZmY2NjUzNDQtNTgxNC00M2Q4LTljOWQtMjNjNDBjNWUxNmJlXkEyXkFqcGdeQXVyNTA4NzY1MzY@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1341 bytes
+==================================================
+downloaded 1341 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BYjBmYTQ1NjItZWU5MS00YjI0LTg2OTYtYmFkN2JkMmNiNWVkXkEyXkFqcGdeQXVyMTMxMTY0OTQ@._V1_UY67_CR2,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1958 bytes
+==================================================
+downloaded 1958 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BYjJiZjMzYzktNjU0NS00OTkxLWEwYzItYzdhYWJjN2QzMTRlL2ltYWdlL2ltYWdlXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1808 bytes
+==================================================
+downloaded 1808 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BODQ3NDExOGYtMzI3Mi00NWRlLTkwNjAtNjc4MDgzZGJiZTA1XkEyXkFqcGdeQXVyMjUzOTY1NTc@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1728 bytes
+==================================================
+downloaded 1728 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BNGUxYWM3M2MtMGM3Mi00ZmRiLWE0NGQtZjE5ODI2OTJhNTU0XkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1677 bytes
+==================================================
+downloaded 1677 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BOGQzZTBjMjQtOTVmMS00NGE5LWEyYmMtOGQ1ZGZjNmRkYjFhXkEyXkFqcGdeQXVyMjUzOTY1NTc@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1020 bytes
+==================================================
+downloaded 1020 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BY2I4MmM1N2EtM2YzOS00OWUzLTkzYzctNDc5NDg2N2IyODJmXkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1924 bytes
+==================================================
+downloaded 1924 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BM2FhYjEyYmYtMDI1Yy00YTdlLWI2NWQtYmEzNzAxOGY1NjY2XkEyXkFqcGdeQXVyNTA3NTIyNDg@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1708 bytes
+==================================================
+downloaded 1708 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BYmQyNTA1ZGItNjZjMi00NzFlLWEzMWEtNWMwN2Q2MjJhYzEyXkEyXkFqcGdeQXVyMjUzOTY1NTc@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1180 bytes
+==================================================
+downloaded 1180 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BZTcyNjk1MjgtOWI3Mi00YzQwLWI5MTktMzY4ZmI2NDAyNzYzXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1765 bytes
+==================================================
+downloaded 1765 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BNTU2ODkyY2MtMjU1NC00NjE1LWEzYjgtMWQ3MzRhMTE0NDc0XkEyXkFqcGdeQXVyMjM4MzQ4OTQ@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1595 bytes
+==================================================
+downloaded 1595 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMjIyNTQ5NjQ1OV5BMl5BanBnXkFtZTcwODg1MDU4OA@@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1770 bytes
+==================================================
+downloaded 1770 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMjExMTg5OTU0NF5BMl5BanBnXkFtZTcwMjMxMzMzMw@@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1643 bytes
+==================================================
+downloaded 1643 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BNmQyNmJjM2ItNTQzYi00ZjMxLWFjMDYtZjUyN2YwZDk5YWQ2XkEyXkFqcGdeQXVyMjUzOTY1NTc@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1833 bytes
+==================================================
+downloaded 1833 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMTU0NTkyNzYwMF5BMl5BanBnXkFtZTgwMDU0NDk5MTI@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1752 bytes
+==================================================
+downloaded 1752 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BOWQwOTA1ZDQtNzk3Yi00ZmVmLWFiZGYtNjdjNThiYjJhNzRjXkEyXkFqcGdeQXVyODE5NzE3OTE@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1767 bytes
+==================================================
+downloaded 1767 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BOTI5Nzc0OTMtYzBkMS00NjkxLThmM2UtNjM2ODgxN2M5NjNkXkEyXkFqcGdeQXVyNjQ2MjQ5NzM@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1697 bytes
+==================================================
+downloaded 1697 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BZWFlYmY2MGEtZjVkYS00YzU4LTg0YjQtYzY1ZGE3NTA5NGQxXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1400 bytes
+==================================================
+downloaded 1400 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMmExYWJjNTktNGUyZS00ODhmLTkxYzAtNWIzOGEyMGNiMmUwXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1748 bytes
+==================================================
+downloaded 1748 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BNDQwODU5OWYtNDcyNi00MDQ1LThiOGMtZDkwNWJiM2Y3MDg0XkEyXkFqcGdeQXVyMDI2NDg0NQ@@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1608 bytes
+==================================================
+downloaded 1608 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMjMxNjY2MDU1OV5BMl5BanBnXkFtZTgwNzY1MTUwNTM@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1878 bytes
+==================================================
+downloaded 1878 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BZGU2OGY5ZTYtMWNhYy00NjZiLWI0NjUtZmNhY2JhNDRmODU3XkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 911 bytes
+==================================================
+downloaded 911 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BNTBmZWJkNjctNDhiNC00MGE2LWEwOTctZTk5OGVhMWMyNmVhXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1056 bytes
+==================================================
+downloaded 1056 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BZWI3ZTMxNjctMjdlNS00NmUwLWFiM2YtZDUyY2I3N2MxYTE0XkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1565 bytes
+==================================================
+downloaded 1565 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMjMwNDkxMTgzOF5BMl5BanBnXkFtZTgwNTkwNTQ3NjM@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1653 bytes
+==================================================
+downloaded 1653 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMTk4ODQzNDY3Ml5BMl5BanBnXkFtZTcwODA0NTM4Nw@@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1440 bytes
+==================================================
+downloaded 1440 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMTI3NTQyMzU5M15BMl5BanBnXkFtZTcwMTM2MjgyMQ@@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1428 bytes
+==================================================
+downloaded 1428 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BNGVjNWI4ZGUtNzE0MS00YTJmLWE0ZDctN2ZiYTk2YmI3NTYyXkEyXkFqcGdeQXVyMTkxNjUyNQ@@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1247 bytes
+==================================================
+downloaded 1247 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BNWJlNzUzNGMtYTAwMS00ZjI2LWFmNWQtODcxNWUxODA5YmU1XkEyXkFqcGdeQXVyNTIzOTk5ODM@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1340 bytes
+==================================================
+downloaded 1340 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMzkzMmU0YTYtOWM3My00YzBmLWI0YzctOGYyNTkwMWE5MTJkXkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1588 bytes
+==================================================
+downloaded 1588 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMDU2ZWJlMjktMTRhMy00ZTA5LWEzNDgtYmNmZTEwZTViZWJkXkEyXkFqcGdeQXVyNDQ2OTk4MzI@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 2109 bytes
+==================================================
+downloaded 2109 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BYjQ5NjM0Y2YtNjZkNC00ZDhkLWJjMWItN2QyNzFkMDE3ZjAxXkEyXkFqcGdeQXVyODIxMzk5NjA@._V1_UY67_CR1,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1741 bytes
+==================================================
+downloaded 1741 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BOTJiNDEzOWYtMTVjOC00ZjlmLWE0NGMtZmE1OWVmZDQ2OWJhXkEyXkFqcGdeQXVyNTIzOTk5ODM@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1474 bytes
+==================================================
+downloaded 1474 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BNDBjMWUxNTUtNjZiNi00YzJhLTgzNzUtMTRiY2FkZmMzYTNjXkEyXkFqcGdeQXVyMTUzMDUzNTI3._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1632 bytes
+==================================================
+downloaded 1632 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BNGIzY2IzODQtNThmMi00ZDE4LWI5YzAtNzNlZTM1ZjYyYjUyXkEyXkFqcGdeQXVyODEzNjM5OTQ@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1674 bytes
+==================================================
+downloaded 1674 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMTc5MDE2ODcwNV5BMl5BanBnXkFtZTgwMzI2NzQ2NzM@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1820 bytes
+==================================================
+downloaded 1820 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMGFkNWI4MTMtNGQ0OC00MWVmLTk3MTktOGYxN2Y2YWVkZWE2XkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1496 bytes
+==================================================
+downloaded 1496 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BOTI0MzcxMTYtZDVkMy00NjY1LTgyMTYtZmUxN2M3NmQ2NWJhXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1625 bytes
+==================================================
+downloaded 1625 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BODRmZDVmNzUtZDA4ZC00NjhkLWI2M2UtN2M0ZDIzNDcxYThjL2ltYWdlXkEyXkFqcGdeQXVyNTk0MzMzODA@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1601 bytes
+==================================================
+downloaded 1601 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BOTdiNzJlOWUtNWMwNS00NmFlLWI0YTEtZmI3YjIzZWUyY2Y3XkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1586 bytes
+==================================================
+downloaded 1586 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMTgxOTY4Mjc0MF5BMl5BanBnXkFtZTcwNTA4MDQyMw@@._V1_UY67_CR1,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1846 bytes
+==================================================
+downloaded 1846 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BZDRjNGViMjQtOThlMi00MTA3LThkYzQtNzJkYjBkMGE0YzE1XkEyXkFqcGdeQXVyNDYyMDk5MTU@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1795 bytes
+==================================================
+downloaded 1795 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BNTkyOGVjMGEtNmQzZi00NzFlLTlhOWQtODYyMDc2ZGJmYzFhXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_UY67_CR1,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1835 bytes
+==================================================
+downloaded 1835 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BOWZlMjFiYzgtMTUzNC00Y2IzLTk1NTMtZmNhMTczNTk0ODk1XkEyXkFqcGdeQXVyNTAyODkwOQ@@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1458 bytes
+==================================================
+downloaded 1458 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BZGQ1NWZlYjctNDJmOS00MmU2LTg1ODItNmZiM2ZkNzJhNDI0XkEyXkFqcGdeQXVyNjc1NTYyMjg@._V1_UY67_CR1,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1867 bytes
+==================================================
+downloaded 1867 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMmNlYzRiNDctZWNhMi00MzI4LThkZTctMTUzMmZkMmFmNThmXkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1881 bytes
+==================================================
+downloaded 1881 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMTY4NzcwODg3Nl5BMl5BanBnXkFtZTcwNTEwOTMyMw@@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1232 bytes
+==================================================
+downloaded 1232 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BZmExNmEwYWItYmQzOS00YjA5LTk2MjktZjEyZDE1Y2QxNjA1XkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1526 bytes
+==================================================
+downloaded 1526 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BY2Y3OWNkMTctYzNjYS00NWVkLTg4OWEtY2YxN2I3NDhlYzE0XkEyXkFqcGdeQXVyMTI3ODAyMzE2._V1_UY67_CR1,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1090 bytes
+==================================================
+downloaded 1090 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BYWY5ZjhjNGYtZmI2Ny00ODM0LWFkNzgtZmI1YzA2N2MxMzA0XkEyXkFqcGdeQXVyNjUwNzk3NDc@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1591 bytes
+==================================================
+downloaded 1591 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BYjBiOTYxZWItMzdiZi00NjlkLWIzZTYtYmFhZjhiMTljOTdkXkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1993 bytes
+==================================================
+downloaded 1993 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMTg2NDg3ODg4NF5BMl5BanBnXkFtZTcwNzk3NTc3Nw@@._V1_UY67_CR1,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1100 bytes
+==================================================
+downloaded 1100 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BODA4ODk3OTEzMF5BMl5BanBnXkFtZTgwMTQ2ODMwMzE@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1658 bytes
+==================================================
+downloaded 1658 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BZDA3NDExMTUtMDlhOC00MmQ5LWExZGUtYmI1NGVlZWI4OWNiXkEyXkFqcGdeQXVyNjc1NTYyMjg@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1638 bytes
+==================================================
+downloaded 1638 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BNzU3OTI1MjItYTJiZC00NDI0LWFlNGYtOTQ1OTVhNDgwM2U3XkEyXkFqcGdeQXVyNTc2MDU0NDE@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1161 bytes
+==================================================
+downloaded 1161 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BYTE4ODEwZDUtNDFjOC00NjAxLWEzYTQtYTI1NGVmZmFlNjdiL2ltYWdlL2ltYWdlXkEyXkFqcGdeQXVyNjc1NTYyMjg@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1744 bytes
+==================================================
+downloaded 1744 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BNDg4NjM1YjMtYmNhZC00MjM0LWFiZmYtNGY1YjA3MzZmODc5XkEyXkFqcGdeQXVyNDk3NzU2MTQ@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1518 bytes
+==================================================
+downloaded 1518 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMTY3MjM1Mzc4N15BMl5BanBnXkFtZTgwODM0NzAxMDE@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1032 bytes
+==================================================
+downloaded 1032 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BOTdlNjgyZGUtOTczYi00MDdhLTljZmMtYTEwZmRiOWFkYjRhXkEyXkFqcGdeQXVyNDY2MTk1ODk@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1879 bytes
+==================================================
+downloaded 1879 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BNzkxODk0NjEtYjc4Mi00ZDI0LTgyYjEtYzc1NDkxY2YzYTgyXkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1367 bytes
+==================================================
+downloaded 1367 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BNzkwODFjNzItMmMwNi00MTU5LWE2MzktM2M4ZDczZGM1MmViXkEyXkFqcGdeQXVyNDY2MTk1ODk@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1686 bytes
+==================================================
+downloaded 1686 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BNjdjNGQ4NDEtNTEwYS00MTgxLTliYzQtYzE2ZDRiZjFhZmNlXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1312 bytes
+==================================================
+downloaded 1312 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BZTcyYmQ2NDMtNWI1NS00MTNiLTk0NDctNWMwNWExYTNlYzk3XkEyXkFqcGdeQXVyMTA0MTM5NjI2._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1038 bytes
+==================================================
+downloaded 1038 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BNGU3NjQ4YTMtZGJjOS00YTQ3LThmNmItMTI5MDE2ODI3NzY3XkEyXkFqcGdeQXVyMjUzOTY1NTc@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1525 bytes
+==================================================
+downloaded 1525 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BNmVmYzcwNzMtMWM1NS00MWIyLThlMDEtYzUwZDgzODE1NmE2XkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1784 bytes
+==================================================
+downloaded 1784 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BM2M1MmVhNDgtNmI0YS00ZDNmLTkyNjctNTJiYTQ2N2NmYzc2XkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1431 bytes
+==================================================
+downloaded 1431 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BYjZjNTJlZGUtZTE1Ny00ZDc4LTgwYjUtMzk0NDgwYzZjYTk1XkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_UY67_CR1,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1473 bytes
+==================================================
+downloaded 1473 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMTk3NDE2NzI4NF5BMl5BanBnXkFtZTgwNzE1MzEyMTE@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1968 bytes
+==================================================
+downloaded 1968 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMDQ2YzEyZGItYWRhOS00MjBmLTkzMDUtMTdjYzkyMmQxZTJlXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1725 bytes
+==================================================
+downloaded 1725 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMTg5YWIyMWUtZDY5My00Zjc1LTljOTctYmI0MWRmY2M2NmRkXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1860 bytes
+==================================================
+downloaded 1860 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMWE3MGYzZjktY2Q5Mi00Y2NiLWIyYWUtMmIyNzA3YmZlMGFhXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1524 bytes
+==================================================
+downloaded 1524 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BN2JmMjViMjMtZTM5Mi00ZGZkLTk5YzctZDg5MjFjZDE4NjNkXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1481 bytes
+==================================================
+downloaded 1481 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BZjRlNDUxZjAtOGQ4OC00OTNlLTgxNmQtYTBmMDgwZmNmNjkxXkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1661 bytes
+==================================================
+downloaded 1661 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMTA2NDYxOGYtYjU1Mi00Y2QzLTgxMTQtMWI1MGI0ZGQ5MmU4XkEyXkFqcGdeQXVyNDk3NzU2MTQ@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1785 bytes
+==================================================
+downloaded 1785 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BY2Q0ODg4ZmItNDZiYi00ZWY5LTg2NzctNmYwZjA5OThmNzE1XkEyXkFqcGdeQXVyMjM4MzQ4OTQ@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1636 bytes
+==================================================
+downloaded 1636 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BNmI1ODdjODctMDlmMC00ZWViLWI5MzYtYzRhNDdjYmM3MzFjXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1837 bytes
+==================================================
+downloaded 1837 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BNjViNWRjYWEtZTI0NC00N2E3LTk0NGQtMjY4NTM3OGNkZjY0XkEyXkFqcGdeQXVyMjUxMTY3ODM@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1205 bytes
+==================================================
+downloaded 1205 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BOTdmNTFjNDEtNzg0My00ZjkxLTg1ZDAtZTdkMDc2ZmFiNWQ1XkEyXkFqcGdeQXVyNTAzNzgwNTg@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1339 bytes
+==================================================
+downloaded 1339 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMDhjZWViN2MtNzgxOS00NmI4LThiZDQtZDI3MzM4MDE4NTc0XkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_UY67_CR1,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1513 bytes
+==================================================
+downloaded 1513 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMTU0NTU5NTAyMl5BMl5BanBnXkFtZTYwNzYwMDg2._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1066 bytes
+==================================================
+downloaded 1066 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMzJlZTNkYjQtMTE1OS00YTJlLTgxNjItYzg4NTllODdkMzBiXkEyXkFqcGdeQXVyMjUzOTY1NTc@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1657 bytes
+==================================================
+downloaded 1657 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BOTY4YjI2N2MtYmFlMC00ZjcyLTg3YjEtMDQyM2ZjYzQ5YWFkXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1389 bytes
+==================================================
+downloaded 1389 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMTQ4MzQzMzM2Nl5BMl5BanBnXkFtZTgwMTQ1NzU3MDI@._V1_UY67_CR1,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1741 bytes
+==================================================
+downloaded 1741 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BZjhhMThhNDItNTY2MC00MmU1LTliNDEtNDdhZjdlNTY5ZDQ1XkEyXkFqcGdeQXVyNjc1NTYyMjg@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1645 bytes
+==================================================
+downloaded 1645 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BNzAyOGIxYjAtMGY2NC00ZTgyLWIwMWEtYzY0OWQ4NDFjOTc5XkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1795 bytes
+==================================================
+downloaded 1795 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMTY2MTAzODI5NV5BMl5BanBnXkFtZTgwMjM4NzQ0MjE@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1657 bytes
+==================================================
+downloaded 1657 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BZGJhNWRiOWQtMjI4OS00ZjcxLTgwMTAtMzQ2ODkxY2JkOTVlXkEyXkFqcGdeQXVyMTkxNjUyNQ@@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1318 bytes
+==================================================
+downloaded 1318 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BYzIzYmJlYTYtNGNiYy00N2EwLTk4ZjItMGYyZTJiOTVkM2RlXkEyXkFqcGdeQXVyODY1NDk1NjE@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1089 bytes
+==================================================
+downloaded 1089 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMjIxMjgxNTk0MF5BMl5BanBnXkFtZTgwNjIyOTg2MDE@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1866 bytes
+==================================================
+downloaded 1866 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BZWMyYzFjYTYtNTRjYi00OGExLWE2YzgtOGRmYjAxZTU3NzBiXkEyXkFqcGdeQXVyMzQ0MzA0NTM@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1730 bytes
+==================================================
+downloaded 1730 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BNDc2ODQ5NTE2MV5BMl5BanBnXkFtZTcwODExMjUyNA@@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1411 bytes
+==================================================
+downloaded 1411 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMmU1NGYwZWYtOWExNi00ZTEyLTgwMmUtM2ZlMDVjNWM4YjVlXkEyXkFqcGdeQXVyMjUzOTY1NTc@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1342 bytes
+==================================================
+downloaded 1342 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMTcxOWYzNDYtYmM4YS00N2NkLTk0NTAtNjg1ODgwZjAxYzI3XkEyXkFqcGdeQXVyNTA4NzY1MzY@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1307 bytes
+==================================================
+downloaded 1307 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BODM3YWY4NmQtN2Y3Ni00OTg0LWFhZGQtZWE3ZWY4MTJlOWU4XkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1238 bytes
+==================================================
+downloaded 1238 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BYzFjMThiMGItOWRlMC00MDI4LThmOGUtYTNlZGZiYWI1YjMyXkEyXkFqcGdeQXVyMjUzOTY1NTc@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1191 bytes
+==================================================
+downloaded 1191 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMjAxODQ4MDU5NV5BMl5BanBnXkFtZTcwMDU4MjU1MQ@@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 982 bytes
+==================================================
+downloaded 982 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMDIzODcyY2EtMmY2MC00ZWVlLTgwMzAtMjQwOWUyNmJjNTYyXkEyXkFqcGdeQXVyNDk3NzU2MTQ@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1479 bytes
+==================================================
+downloaded 1479 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMWM4NTFhYjctNzUyNi00NGMwLTk3NTYtMDIyNTZmMzRlYmQyXkEyXkFqcGdeQXVyMTAwMzUyOTc@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 664 bytes
+==================================================
+downloaded 664 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMzcwYWFkYzktZjAzNC00OGY1LWI4YTgtNzc5MzVjMDVmNjY0XkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1467 bytes
+==================================================
+downloaded 1467 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BN2IyNTE4YzUtZWU0Mi00MGIwLTgyMmQtMzQ4YzQxYWNlYWE2XkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1915 bytes
+==================================================
+downloaded 1915 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BZThiZjAzZjgtNDU3MC00YThhLThjYWUtZGRkYjc2ZWZlOTVjXkEyXkFqcGdeQXVyNTA4NzY1MzY@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1685 bytes
+==================================================
+downloaded 1685 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BOTJlZWMxYzEtMjlkMS00ODE0LThlM2ItMDI3NGQ2YjhmMzkxXkEyXkFqcGdeQXVyMDI2NDg0NQ@@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1754 bytes
+==================================================
+downloaded 1754 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BYzhiNDkyNzktNTZmYS00ZTBkLTk2MDAtM2U0YjU1MzgxZjgzXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1350 bytes
+==================================================
+downloaded 1350 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMjM2MDgxMDg0Nl5BMl5BanBnXkFtZTgwNTM2OTM5NDE@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1164 bytes
+==================================================
+downloaded 1164 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BNzA2NmYxMWUtNzBlMC00MWM2LTkwNmQtYTFlZjQwODNhOWE0XkEyXkFqcGdeQXVyNTIzOTk5ODM@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1609 bytes
+==================================================
+downloaded 1609 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMjEzMzA4NDE2OF5BMl5BanBnXkFtZTcwNTc5MDI2NQ@@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1497 bytes
+==================================================
+downloaded 1497 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BNzM3NDFhYTAtYmU5Mi00NGRmLTljYjgtMDkyODQ4MjNkMGY2XkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1716 bytes
+==================================================
+downloaded 1716 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMjA5Njk3MjM4OV5BMl5BanBnXkFtZTcwMTc5MTE1MQ@@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1159 bytes
+==================================================
+downloaded 1159 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BZTAzNWZlNmUtZDEzYi00ZjA5LWIwYjEtZGM1NWE1MjE4YWRhXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1274 bytes
+==================================================
+downloaded 1274 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMDVjNjIwOGItNDE3Ny00OThjLWE0NzQtZTU3YjMzZTZjMzhkXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1168 bytes
+==================================================
+downloaded 1168 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMjJkMDZhYzItZTFhMi00ZGI4LThlNTAtZDNlYmEwNjFkNDYzXkEyXkFqcGdeQXVyMjUzOTY1NTc@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1554 bytes
+==================================================
+downloaded 1554 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BYjRmODkzNDItMTNhNi00YjJlLTg0ZjAtODlhZTM0YzgzYThlXkEyXkFqcGdeQXVyNzQ1ODk3MTQ@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1491 bytes
+==================================================
+downloaded 1491 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BNGViZWZmM2EtNGYzZi00ZDAyLTk3ODMtNzIyZTBjN2Y1NmM1XkEyXkFqcGdeQXVyNTAyODkwOQ@@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1590 bytes
+==================================================
+downloaded 1590 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BYjUyZWZkM2UtMzYxYy00ZmQ3LWFmZTQtOGE2YjBkNjA3YWZlXkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1913 bytes
+==================================================
+downloaded 1913 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BOTI5ODc3NzExNV5BMl5BanBnXkFtZTcwNzYxNzQzMw@@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1417 bytes
+==================================================
+downloaded 1417 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BOTgxMDQwMDk0OF5BMl5BanBnXkFtZTgwNjU5OTg2NDE@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1932 bytes
+==================================================
+downloaded 1932 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMTAyN2JmZmEtNjAyMy00NzYwLThmY2MtYWQ3OGNhNjExMmM4XkEyXkFqcGdeQXVyNDk3NzU2MTQ@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1610 bytes
+==================================================
+downloaded 1610 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BOWIwODIxYWItZDI4MS00YzhhLWE3MmYtMzlhZDIwOTMzZmE5L2ltYWdlXkEyXkFqcGdeQXVyNjc1NTYyMjg@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1592 bytes
+==================================================
+downloaded 1592 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BY2FhZGI5M2QtZWFiZS00NjkwLWE4NWQtMzg3ZDZjNjdkYTJiXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1273 bytes
+==================================================
+downloaded 1273 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BNmM4YTFmMmItMGE3Yy00MmRkLTlmZGEtMzZlOTQzYjk3MzA2XkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1366 bytes
+==================================================
+downloaded 1366 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BOGY5NmNlMmQtYzRlYy00NGQ5LWFkYjYtNzExZmQyMTg0ZDA0XkEyXkFqcGdeQXVyNDIzMzcwNjc@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1791 bytes
+==================================================
+downloaded 1791 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMjI0ODcxNzM1N15BMl5BanBnXkFtZTgwMzIwMTEwNDI@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1072 bytes
+==================================================
+downloaded 1072 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMzA5Zjc3ZTMtMmU5YS00YTMwLWI4MWUtYTU0YTVmNjVmODZhXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1451 bytes
+==================================================
+downloaded 1451 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMTk4ODk5MTMyNV5BMl5BanBnXkFtZTcwMDMyNTg0Ng@@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1355 bytes
+==================================================
+downloaded 1355 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMTc5NTk2OTU1Nl5BMl5BanBnXkFtZTcwMDc3NjAwMg@@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1205 bytes
+==================================================
+downloaded 1205 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BNDJiZDgyZjctYmRjMS00ZjdkLTkwMTEtNGU1NDg3NDQ0Yzk1XkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1753 bytes
+==================================================
+downloaded 1753 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMTg0NTIzMjQ1NV5BMl5BanBnXkFtZTcwNDc3MzM5OQ@@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1066 bytes
+==================================================
+downloaded 1066 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BYzJjMTYyMjQtZDI0My00ZjE2LTkyNGYtOTllNGQxNDMyZjE0XkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_UY67_CR1,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1513 bytes
+==================================================
+downloaded 1513 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMTkxNzA1NDQxOV5BMl5BanBnXkFtZTcwNTkyMTIzMw@@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1141 bytes
+==================================================
+downloaded 1141 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMTY5MzYzNjc5NV5BMl5BanBnXkFtZTYwNTUyNTc2._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1358 bytes
+==================================================
+downloaded 1358 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BZjEyOTE4MzMtNmMzMy00Mzc3LWJlOTQtOGJiNDE0ZmJiOTU4L2ltYWdlXkEyXkFqcGdeQXVyNTAyODkwOQ@@._V1_UY67_CR2,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1645 bytes
+==================================================
+downloaded 1645 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BNzQzMzJhZTEtOWM4NS00MTdhLTg0YjgtMjM4MDRkZjUwZDBlXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1856 bytes
+==================================================
+downloaded 1856 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BY2I0MWFiZDMtNWQyYy00Njk5LTk3MDktZjZjNTNmZmVkYjkxXkEyXkFqcGdeQXVyNjc1NTYyMjg@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1499 bytes
+==================================================
+downloaded 1499 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BZTYwZWQ4ZTQtZWU0MS00N2YwLWEzMDItZWFkZWY0MWVjODVhXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1380 bytes
+==================================================
+downloaded 1380 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BYjE2OTdhMWUtOGJlMy00ZDViLWIzZjgtYjZkZGZmMDZjYmEyXkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1937 bytes
+==================================================
+downloaded 1937 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BNjgxY2JiZDYtZmMwOC00ZmJjLWJmODUtMTNmNWNmYWI5ODkwL2ltYWdlL2ltYWdlXkEyXkFqcGdeQXVyNjc1NTYyMjg@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1366 bytes
+==================================================
+downloaded 1366 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BZDdiZTAwYzAtMDI3Ni00OTRjLTkzN2UtMGE3MDMyZmU4NTU4XkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1435 bytes
+==================================================
+downloaded 1435 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMjExMTEzODkyN15BMl5BanBnXkFtZTcwNTU4NTc4OQ@@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1243 bytes
+==================================================
+downloaded 1243 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BYTdiOTIyZTQtNmQ1OS00NjZlLWIyMTgtYzk5Y2M3ZDVmMDk1XkEyXkFqcGdeQXVyMTAzMDg4NzU0._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 2149 bytes
+==================================================
+downloaded 2149 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BYWQxYzdhMDMtNjAyZC00NzE0LWFjYmQtYjk0YzMyYjA5NzZkXkEyXkFqcGdeQXVyMjUzOTY1NTc@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1420 bytes
+==================================================
+downloaded 1420 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BYmRiMDFlYjYtOTMwYy00OGY2LWE0Y2QtYzQxOGNhZmUwNTIxXkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1469 bytes
+==================================================
+downloaded 1469 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMTk0MDQ3MzAzOV5BMl5BanBnXkFtZTgwNzU1NzE3MjE@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1097 bytes
+==================================================
+downloaded 1097 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMGVmMWNiMDktYjQ0Mi00MWIxLTk0N2UtN2ZlYTdkN2IzNDNlXkEyXkFqcGdeQXVyODE5NzE3OTE@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1421 bytes
+==================================================
+downloaded 1421 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BNDhmNTA0ZDMtYjhkNS00NzEzLWIzYTItOGNkMTVmYjE2YmI3XkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1528 bytes
+==================================================
+downloaded 1528 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMmYyOTgwYWItYmU3Ny00M2E2LTk0NWMtMDVlNmQ0MWZiMTMxXkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1267 bytes
+==================================================
+downloaded 1267 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMzM5NjUxOTEyMl5BMl5BanBnXkFtZTgwNjEyMDM0MDE@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1183 bytes
+==================================================
+downloaded 1183 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BNmY0MWY2NDctZDdmMi00MjA1LTk0ZTQtZDMyZTQ1NTNlYzVjXkEyXkFqcGdeQXVyMjUzOTY1NTc@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1345 bytes
+==================================================
+downloaded 1345 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BZTYwYjYxYzgtMDE1Ni00NzU4LWJlMTEtODQ5YmJmMGJhZjI5L2ltYWdlXkEyXkFqcGdeQXVyMDI2NDg0NQ@@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1831 bytes
+==================================================
+downloaded 1831 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BZDdkNzMwZmUtY2Q5MS00ZmM2LWJhYjItYTBjMWY0MGM4MDRjXkEyXkFqcGdeQXVyNTA4NzY1MzY@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1948 bytes
+==================================================
+downloaded 1948 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BZWFhOGU5NDctY2Q3YS00Y2VlLWI1NzEtZmIwY2ZiZjY4OTA2XkEyXkFqcGdeQXVyMDI2NDg0NQ@@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1548 bytes
+==================================================
+downloaded 1548 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMjQ1NjM3MTUxNV5BMl5BanBnXkFtZTgwMDc5MTY5OTE@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1276 bytes
+==================================================
+downloaded 1276 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BOGViNTg4YTktYTQ2Ni00MTU0LTk2NWUtMTI4OTc1YTM0NzQ2XkEyXkFqcGdeQXVyMDM2NDM2MQ@@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 850 bytes
+==================================================
+downloaded 850 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMWYwOThjM2ItZGYxNy00NTQwLWFlZWEtM2MzM2Q5MmY3NDU5XkEyXkFqcGdeQXVyMTkxNjUyNQ@@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1503 bytes
+==================================================
+downloaded 1503 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BNGQzY2Y0MTgtMDA4OC00NjM3LWI0ZGQtNTJlM2UxZDQxZjI0XkEyXkFqcGdeQXVyNDUzOTQ5MjY@._V1_UY67_CR1,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1703 bytes
+==================================================
+downloaded 1703 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BOWM3MmE0OGYtOGVlNC00OWE1LTk5ZTAtYmUwMDIwM2ZlNWJiXkEyXkFqcGdeQXVyMjUzOTY1NTc@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1080 bytes
+==================================================
+downloaded 1080 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMjE4NzgzNzEwMl5BMl5BanBnXkFtZTgwMTMzMDE0NjE@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1368 bytes
+==================================================
+downloaded 1368 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BN2EwM2I5OWMtMGQyMi00Zjg1LWJkNTctZTdjYTA4OGUwZjMyXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1879 bytes
+==================================================
+downloaded 1879 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMjA5NDQyMjc2NF5BMl5BanBnXkFtZTcwMjg5ODcyMw@@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1477 bytes
+==================================================
+downloaded 1477 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMTQ0NjUzMDMyOF5BMl5BanBnXkFtZTgwODA1OTU0MDE@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1576 bytes
+==================================================
+downloaded 1576 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMDgzYjQwMDMtNGUzYi00MTRmLWIyMGMtNjE1OGZkNzY2YWIzL2ltYWdlXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_UY67_CR1,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1072 bytes
+==================================================
+downloaded 1072 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMTY1NTI0ODUyOF5BMl5BanBnXkFtZTgwNTEyNjQ0MDE@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1620 bytes
+==================================================
+downloaded 1620 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMmVmODY1MzEtYTMwZC00MzNhLWFkNDMtZjAwM2EwODUxZTA5XkEyXkFqcGdeQXVyNTAyODkwOQ@@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1388 bytes
+==================================================
+downloaded 1388 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BOGYwYWNjMzgtNGU4ZC00NWQ2LWEwZjUtMzE1Zjc3NjY3YTU1XkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1390 bytes
+==================================================
+downloaded 1390 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BYWQ4ZTRiODktNjAzZC00Nzg1LTk1YWQtNDFmNDI0NmZiNGIwXkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1527 bytes
+==================================================
+downloaded 1527 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BNjBjNDJiYTUtOWY0OS00OGVmLTg2YzctMTE0NzVhODM1ZWJmXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1976 bytes
+==================================================
+downloaded 1976 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BZGJjYmIzZmQtNWE4Yy00ZGVmLWJkZGEtMzUzNmQ4ZWFlMjRhXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1266 bytes
+==================================================
+downloaded 1266 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BNTBkMjg2MjYtYTZjOS00ODQ0LTg0MDEtM2FiNmJmOGU1NGEwXkEyXkFqcGdeQXVyMjUzOTY1NTc@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1403 bytes
+==================================================
+downloaded 1403 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BM2UwMDVmMDItM2I2Yi00NGZmLTk4ZTUtY2JjNTQ3OGQ5ZjM2XkEyXkFqcGdeQXVyMTA1OTYzOTUx._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1175 bytes
+==================================================
+downloaded 1175 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMzRjZjdlMjQtODVkYS00N2YzLWJlYWYtMGVlN2E5MWEwMWQzXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1322 bytes
+==================================================
+downloaded 1322 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMmFkNDY5OTktNzY3Yy00OTFlLThhNjktOTRhMmZjZmIxYjAxXkEyXkFqcGdeQXVyNTgyNTA4MjM@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1414 bytes
+==================================================
+downloaded 1414 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BODJmY2Y2OGQtMDg2My00N2Q3LWJmZTUtYTc2ODBjZDVlNDlhXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1147 bytes
+==================================================
+downloaded 1147 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BYTViNzMxZjEtZGEwNy00MDNiLWIzNGQtZDY2MjQ1OWViZjFmXkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1786 bytes
+==================================================
+downloaded 1786 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMjIyOTM5OTIzNV5BMl5BanBnXkFtZTgwMDkzODE2NjE@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1264 bytes
+==================================================
+downloaded 1264 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BOWEwODJmZDItYTNmZC00OGM4LThlNDktOTQzZjIzMGQxODA4XkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1655 bytes
+==================================================
+downloaded 1655 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BYzc5MTU4N2EtYTkyMi00NjdhLTg3NWEtMTY4OTEyMzJhZTAzXkEyXkFqcGdeQXVyNjc1NTYyMjg@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1254 bytes
+==================================================
+downloaded 1254 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BNzY0NjU5ODUtOTAzMC00NTU5LWJkZjctYWMyOWY2MTZmOWM1XkEyXkFqcGdeQXVyMTI3ODAyMzE2._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1671 bytes
+==================================================
+downloaded 1671 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMTMzODU0NTkxMF5BMl5BanBnXkFtZTcwMjQ4MzMzMw@@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1753 bytes
+==================================================
+downloaded 1753 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BNjQ0ODlhMWUtNmUwMS00YjExLWI4MjQtNjVmMmE2Y2E0MGRmXkEyXkFqcGdeQXVyNDk3NzU2MTQ@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1138 bytes
+==================================================
+downloaded 1138 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BNjUyMTc4MDExMV5BMl5BanBnXkFtZTgwNDg0NDIwMjE@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1907 bytes
+==================================================
+downloaded 1907 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BZWIxNzM5YzQtY2FmMS00Yjc3LWI1ZjUtNGVjMjMzZTIxZTIxXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1524 bytes
+==================================================
+downloaded 1524 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMTQ1MjAwNTM5Ml5BMl5BanBnXkFtZTYwNDM0MTc3._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1093 bytes
+==================================================
+downloaded 1093 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BYWFlZGY2NDktY2ZjOS00ZWNkLTg0ZDAtZDY4MTM1ODU4ZjljXkEyXkFqcGdeQXVyMjUzOTY1NTc@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1137 bytes
+==================================================
+downloaded 1137 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BY2RmNTRjYzctODI4Ni00MzQyLWEyNTAtNjU0N2JkMTNhNjJkXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1989 bytes
+==================================================
+downloaded 1989 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMTY5OTU0OTc2NV5BMl5BanBnXkFtZTcwMzU4MDcyMQ@@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1819 bytes
+==================================================
+downloaded 1819 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BODZlOGI5ZjYtN2UwNy00OGY0LTgxY2UtNDZhMzBkN2EyZmIyXkEyXkFqcGdeQXVyNTgyNTA4MjM@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1858 bytes
+==================================================
+downloaded 1858 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BNzJiOGI2MjctYjUyMS00ZjkzLWE2ZmUtOTg4NTZkOTNhZDc1L2ltYWdlXkEyXkFqcGdeQXVyNjc1NTYyMjg@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1932 bytes
+==================================================
+downloaded 1932 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BYTcxYWExOTMtMWFmYy00ZjgzLWI0YjktNWEzYzJkZTg0NDdmL2ltYWdlXkEyXkFqcGdeQXVyNjc1NTYyMjg@._V1_UY67_CR1,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1678 bytes
+==================================================
+downloaded 1678 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BN2M4YTA4ZTEtN2EyNy00YTlmLWE4YzYtYjYyYjRkMWM4ZDM0XkEyXkFqcGdeQXVyMjUzOTY1NTc@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1898 bytes
+==================================================
+downloaded 1898 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BNzE4NDg5OWMtMzg3NC00ZDRjLTllMDMtZTRjNWZmNjBmMGZlXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_UY67_CR1,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1459 bytes
+==================================================
+downloaded 1459 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BOWFlNzZhYmYtYTI5YS00MDQyLWIyNTUtNTRjMWUwNTEzNjA0XkEyXkFqcGdeQXVyNjUwNzk3NDc@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1851 bytes
+==================================================
+downloaded 1851 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BZjUxNmEwOGItMTBmYi00MWQ1LWExY2MtNDUxMjI0OWM4M2NiXkEyXkFqcGdeQXVyMjUzOTY1NTc@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1538 bytes
+==================================================
+downloaded 1538 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BNGYyZGM5MGMtYTY2Ni00M2Y1LWIzNjQtYWUzM2VlNGVhMDNhXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1628 bytes
+==================================================
+downloaded 1628 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BOTQxOGU0OWUtMzExYy00ZjIxLWJmMzAtNTI1Y2YxYTMxN2RkXkEyXkFqcGdeQXVyMjUzOTY1NTc@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1458 bytes
+==================================================
+downloaded 1458 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BYTQ4MjA4NmYtYjRhNi00MTEwLTg0NjgtNjk3ODJlZGU4NjRkL2ltYWdlL2ltYWdlXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_UY67_CR2,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1954 bytes
+==================================================
+downloaded 1954 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BNjAzMzEwYzctNjc1MC00Nzg5LWFmMGItMTgzYmMyNTY2OTQ4XkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1486 bytes
+==================================================
+downloaded 1486 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BYzJmMWE5NjAtNWMyZS00NmFiLWIwMDgtZDE2NzczYWFhNzIzXkEyXkFqcGdeQXVyNjc1NTYyMjg@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1927 bytes
+==================================================
+downloaded 1927 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BYmFlOTcxMWUtZTMzMi00NWIyLTkwOTEtNjIxNmViNzc2Yzc1XkEyXkFqcGdeQXVyMjUzOTY1NTc@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1160 bytes
+==================================================
+downloaded 1160 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BODIxNjhkYjEtYzUyMi00YTNjLWE1YjktNjAyY2I2MWNkNmNmL2ltYWdlL2ltYWdlXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_UY67_CR1,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1586 bytes
+==================================================
+downloaded 1586 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMDA1ZWI4ZDItOTRlYi00OTUxLWFlNWQtMzM5NDI0YjA4ZGI2XkEyXkFqcGdeQXVyMjUzOTY1NTc@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1648 bytes
+==================================================
+downloaded 1648 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BNDJhYTk2MTctZmVmOS00OTViLTgxNjQtMzQxOTRiMDdmNGRjXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_UY67_CR1,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1414 bytes
+==================================================
+downloaded 1414 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BYWY0OWJlZTgtMWUzNy00MGJhLTk5YzQtNmY5MDEwOTIxNjMyXkEyXkFqcGdeQXVyNjc1NTYyMjg@._V1_UX45_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1447 bytes
+==================================================
+downloaded 1447 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BOTM0NWFjNGYtNjExMS00ZTZlLWFiYmMtZmU4ZjZkMmMxZTNjXkEyXkFqcGdeQXVyODEyNjEwMDk@._V1_UY67_CR4,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1378 bytes
+==================================================
+downloaded 1378 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BY2Q2NDI1MjUtM2Q5ZS00MTFlLWJiYWEtNTZmNjQ3OGJkZDgxXkEyXkFqcGdeQXVyNTI4MjkwNjA@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1348 bytes
+==================================================
+downloaded 1348 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BOGVmZGU2M2EtZTVjYy00OWU2LWI0YjEtZjQ4YjNmODhmMzhkXkEyXkFqcGdeQXVyNjk1Njg5NTA@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1510 bytes
+==================================================
+downloaded 1510 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMTM5OTMyMjIxOV5BMl5BanBnXkFtZTcwNzU4MjIwNQ@@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1483 bytes
+==================================================
+downloaded 1483 bytes
+
+trying URL 'https://m.media-amazon.com/images/M/MV5BMjIxNDU2Njk0OV5BMl5BanBnXkFtZTgwODc3Njc3NjE@._V1_UY67_CR0,0,45,67_AL_.jpg'
+Content type 'image/jpeg' length 1804 bytes
+==================================================
+downloaded 1804 bytes
+
+> 
+> 
+> im = load.image("https://m.media-amazon.com/images/M/MV5BMDFkYTc0MGEtZmNhMC00ZDIzLWFmNTEtODM1ZmRlYWMwMWFmXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_UX67_CR0,0,67,98_AL_.jpeg")
+trying URL 'https://m.media-amazon.com/images/M/MV5BMDFkYTc0MGEtZmNhMC00ZDIzLWFmNTEtODM1ZmRlYWMwMWFmXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_UX67_CR0,0,67,98_AL_.jpeg'
+Content type 'image/jpeg' length 1866 bytes
+==================================================
+downloaded 1866 bytes
+
+> mat.im = as.array(im[,,1,])
+> dimen = dim(mat.im)
+> count = 0
+> for( i in 1:dimen[1])
++ {
++   for (j in 1:dimen[2]) 
++   {
++     if( norm(mat.im[i,j,] - c(0,0,0) ,type = "2") == 0.2 )
++       count = count + 1
++   }
++ }
+> 
+> propo[1] = (count) / ( dimen[1] * dimen[2] )
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> proc.time()
+   user  system elapsed 
+ 34.948   3.062 552.044 
