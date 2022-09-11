@@ -2,7 +2,7 @@ library(imager)
 
 #Question 1
 
-dog <- load.image("https://raw.githubusercontent.com/dootika/worksheet-5-valayash/main/dog.jpeg?token=GHSAT0AAAAAABXTGDBCEOPPE5LWFQVGEX3KYXXHD6A")
+dog <- load.image("https://raw.githubusercontent.com/dootika/worksheet-5-valayash/main/dog.jpeg?token=GHSAT0AAAAAABX4ZYWKFIQ24XRFOHKL2GXIYYMXU5Q")
 plot(dog)
 col.mat <- as.array(dog[,,1,])
 rot.mat <- as.array(dog[,,1,])
@@ -19,7 +19,7 @@ for(i in 1:xaxis_pix)
 }
 rotate = as.cimg(rot.mat)
 plot(rotate)
-
+save.image(file = "roaate.Rdata", oldstyle = FALSE)
 
 #Question 2
 
